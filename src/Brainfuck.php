@@ -2,7 +2,13 @@
 
 class Brainfuck {
     
-    private static $commands = '><+-.,[]';
+    private static $commands = '><+-.,:;[]';
+
+    private $extio = false;
+    
+    function __construct($extio = false) {
+        $this->extio = $extio;
+    }
     
     function run($prg, $input) {
         $code = $this->compile($prg);
@@ -17,7 +23,7 @@ class Brainfuck {
     }
     
     private function preprocess($prg) {
-        $p = preg_replace('/[^\<\>\+\-\.\,\[\]]/', '', $prg);
+        $p = preg_replace('/[^\<\>\+\-\.\,\:\;\[\]]/', '', $prg);
         return $p;
     }
     
@@ -28,7 +34,7 @@ class Brainfuck {
         while ($prg[$i] != 'Z') {
             $cur = $prg[$i];
             $idx = strpos(self::$commands, $cur);
-            if ($idx < 6) {
+            if ($idx < 8) {
                 $i0 = $i;
                 while ($prg[$i] == $cur) {
                     $i++;
@@ -48,9 +54,9 @@ class Brainfuck {
         $stack = array();
         for ($i = 0; $i < $len; $i++) {
             $cur = $code[$i];
-            if ($cur == 6) {
+            if ($cur == 8) {
                 $stack[] = $i;
-            } else if ($cur == 7) {
+            } else if ($cur == 9) {
                 $start = array_pop($stack);
                 $diff = $i - $start;
                 $code[$i] |= $diff << 4;
@@ -92,11 +98,25 @@ class Brainfuck {
                     $data[$dp] = ord($input[$ip]);
                     break;
                 case 6:
+                    $output[] = $data[$dp] . ' ';
+                    break;
+                case 7:
+                    while (!is_numeric($input[$ip])) {
+                        $ip++;
+                    }
+                    $num = 0;
+                    while (is_numeric($input[$ip])) {
+                        $num = $num * 10 + $input[$ip];
+                        $ip++;
+                    }
+                    $data[$dp] = $num;
+                    break;
+                case 8:
                     if ($data[$dp] == 0) {
                         $cp += $cnt;
                     }
                     break;
-                case 7:
+                case 9:
                     if ($data[$dp] != 0) {
                         $cp -= $cnt;
                     }
@@ -107,11 +127,5 @@ class Brainfuck {
         return implode('', $output);
     }
 
-}
-
-// standalone test
-if ($_SERVER['PHP_SELF'] == 'Brainfuck.php') {
-    $bf = new Brainfuck();
-    echo $bf->run('++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.', "");
 }
 
