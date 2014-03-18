@@ -78,49 +78,57 @@ class Brainfuck {
             }
             $cnt = $cur >> 4;
             $cmd = $cur & 0xF;
-            switch ($cmd) {
-                case 0:
-                    $dp += $cnt;
-                    break;
-                case 1:
-                    $dp -= $cnt;
-                    break;
-                case 2:
-                    $data[$dp] += $cnt;
-                    break;
-                case 3:
-                    $data[$dp] -= $cnt;
-                    break;
-                case 4:
-                    $output[] = chr($data[$dp]);
-                    break;
-                case 5:
-                    $data[$dp] = ord($input[$ip]);
-                    break;
-                case 6:
-                    $output[] = $data[$dp] . ' ';
-                    break;
-                case 7:
-                    while (!is_numeric($input[$ip])) {
-                        $ip++;
+            if ($cmd <= 3 || $cmd >= 8) {
+                switch ($cmd) {
+                    case 0:
+                        $dp += $cnt;
+                        break;
+                    case 1:
+                        $dp -= $cnt;
+                        break;
+                    case 2:
+                        $data[$dp] += $cnt;
+                        break;
+                    case 3:
+                        $data[$dp] -= $cnt;
+                        break;
+                    case 8:
+                        if ($data[$dp] == 0) {
+                            $cp += $cnt;
+                        }
+                        break;
+                    case 9:
+                        if ($data[$dp] != 0) {
+                            $cp -= $cnt;
+                        }
+                        break;
+                }
+            } else {
+                while ($cnt > 0) {
+                    switch ($cmd) {
+                        case 4:
+                            $output[] = chr($data[$dp]);
+                            break;
+                        case 5:
+                            $data[$dp] = ord($input[$ip++]);
+                            break;
+                        case 6:
+                            $output[] = $data[$dp] . ' ';
+                            break;
+                        case 7:
+                            while (!is_numeric($input[$ip])) {
+                                $ip++;
+                            }
+                            $num = 0;
+                            while (is_numeric($input[$ip])) {
+                                $num = $num * 10 + $input[$ip];
+                                $ip++;
+                            }
+                            $data[$dp] = $num;
+                            break;
                     }
-                    $num = 0;
-                    while (is_numeric($input[$ip])) {
-                        $num = $num * 10 + $input[$ip];
-                        $ip++;
-                    }
-                    $data[$dp] = $num;
-                    break;
-                case 8:
-                    if ($data[$dp] == 0) {
-                        $cp += $cnt;
-                    }
-                    break;
-                case 9:
-                    if ($data[$dp] != 0) {
-                        $cp -= $cnt;
-                    }
-                    break;
+                    $cnt--;
+                }
             }
             $cp++;
         }
