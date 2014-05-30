@@ -29,6 +29,10 @@ class Brainfuck {
         $p = preg_replace($pattern, '', $prg);
         return $p;
     }
+
+    function codeLength($prg) {
+        return strlen($this->preprocess($prg));
+    }
     
     private function firstPass($prg) {
         $prg .= 'Z';
