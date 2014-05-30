@@ -4,12 +4,14 @@ class Brainfuck {
     
     private static $commands = '><+-.,:;[]';
 
-    private $extio = false;
+    public $extio;
+    public $limit; 
     
-    function __construct($extio = false) {
+    function __construct($extio = false, $limit = 100000) {
         $this->extio = $extio;
+        $this->limit = $limit;
     }
-    
+
     function run($prg, $input) {
         $code = $this->compile($prg);
         return $this->execute($code, $input);
@@ -23,7 +25,8 @@ class Brainfuck {
     }
     
     private function preprocess($prg) {
-        $p = preg_replace('/[^\<\>\+\-\.\,\:\;\[\]]/', '', $prg);
+        $pattern = $this->extio ? '/[^\<\>\+\-\.\,\:\;\[\]]/' : '/[^\<\>\+\-\.\,\[\]]/';
+        $p = preg_replace($pattern, '', $prg);
         return $p;
     }
     
@@ -66,12 +69,13 @@ class Brainfuck {
     }
     
     private function execute($code, $input) {
+        $counter = $this->limit;
         $data = array_fill(0, 30000, 0);
         $output = array();
         $cp = 0;
         $dp = 0;
         $ip = 0;
-        while (true) {
+        while ($counter >= 0) {
             $cur = $code[$cp];
             if ($cur == -1) {
                 break;
@@ -103,6 +107,7 @@ class Brainfuck {
                         }
                         break;
                 }
+                $counter--;
             } else {
                 while ($cnt > 0) {
                     switch ($cmd) {
@@ -128,9 +133,13 @@ class Brainfuck {
                             break;
                     }
                     $cnt--;
+                    $counter--;
                 }
             }
             $cp++;
+        }
+        if ($counter < 0) {
+            throw new \Exception("Limit of operations ({$this->limit}) reached before program finished!");
         }
         return implode('', $output);
     }

@@ -1,6 +1,11 @@
 <?php
 
 require '/src/Brainfuck.php';
+
+$prg = ';>;[-<+>]<:';
     
 $bf = new Brainfuck(true);
-echo $bf->run(';>;[-<+>]<:', "3 5\n");
+echo $bf->run($prg, "3 5\n");
+
+$bf->extio = false;
+echo $bf->run($prg, "3 5\n") === "";
