@@ -126,6 +126,9 @@ class Brainfuck {
                             break;
                         case 7:
                             while (!is_numeric($input[$ip])) {
+                                if (!isset($input[$ip])) {
+                                    throw new \Exception('Input have no more data, but program tries to read from it');
+                                }
                                 $ip++;
                             }
                             $num = 0;
