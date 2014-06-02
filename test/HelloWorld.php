@@ -1,6 +1,6 @@
 <?php
 
-require '/src/Brainfuck.php';
+require 'src/Brainfuck.php';
     
 $bf = new Brainfuck();
 echo $bf->run('++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++.', "");

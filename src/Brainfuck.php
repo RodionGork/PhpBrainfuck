@@ -5,11 +5,13 @@ class Brainfuck {
     private static $commands = '><+-.,:;[]';
 
     public $extio;
-    public $limit; 
+    public $limit;
+    public $data; 
     
     function __construct($extio = false, $limit = 100000) {
         $this->extio = $extio;
         $this->limit = $limit;
+        $this->data = null;
     }
 
     function run($prg, $input) {
@@ -129,7 +131,7 @@ class Brainfuck {
                                 $ip++;
                             }
                             $num = 0;
-                            while (is_numeric($input[$ip])) {
+                            while (isset($input[$ip]) && is_numeric($input[$ip])) {
                                 $num = $num * 10 + $input[$ip];
                                 $ip++;
                             }
@@ -145,7 +147,12 @@ class Brainfuck {
         if ($counter < 0) {
             throw new \Exception("Limit of operations ({$this->limit}) reached before program finished!");
         }
+        $this->data = $data;
         return implode('', $output);
+    }
+    
+    function getDataCell($i) {
+        return (isset($this->data) && isset($this->data[$i])) ? $this->data[$i] : null;
     }
 
 }
