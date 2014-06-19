@@ -2,15 +2,17 @@
 
 class Brainfuck {
     
-    private static $commands = '><+-.,:;[]';
+    private static $commands = '><+-.,:;[]#$';
 
     public $extio;
+    public $stacked;
     public $limit;
     public $data; 
     
-    function __construct($extio = false, $limit = 100000) {
+    function __construct($extio = false, $limit = 100000, $stacked = false) {
         $this->extio = $extio;
         $this->limit = $limit;
+        $this->stacked = $stacked;
         $this->data = null;
     }
 
@@ -27,7 +29,11 @@ class Brainfuck {
     }
     
     private function preprocess($prg) {
-        $pattern = $this->extio ? '/[^\<\>\+\-\.\,\:\;\[\]]/' : '/[^\<\>\+\-\.\,\[\]]/';
+        $pattern = $this->extio ? '\<\>\+\-\.\,\:\;\[\]' : '\<\>\+\-\.\,\[\]';
+        if ($this->stacked) {
+            $pattern .= '\#\$';
+        }
+        $pattern = '/[^' . $pattern . ']/';
         $p = preg_replace($pattern, '', $prg);
         return $p;
     }
@@ -78,6 +84,7 @@ class Brainfuck {
         $counter = $this->limit;
         $data = array_fill(0, 30000, 0);
         $output = array();
+        $stack = array();
         $cp = 0;
         $dp = 0;
         $ip = 0;
@@ -111,6 +118,15 @@ class Brainfuck {
                         if ($data[$dp] != 0) {
                             $cp -= $cnt;
                         }
+                        break;
+                    case 10:
+                        array_push($stack, $data[$dp]);
+                        break;
+                    case 11:
+                        if (count($stack) < 1) {
+                            throw new \Exception('Data stack is empty but program tried to pop from it!');
+                        }
+                        $data[$dp] = array_pop($stack);
                         break;
                 }
                 $counter--;
