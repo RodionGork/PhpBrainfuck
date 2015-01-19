@@ -29,13 +29,35 @@ class Brainfuck {
     }
     
     private function preprocess($prg) {
-        $pattern = $this->extio ? '\<\>\+\-\.\,\:\;\[\]' : '\<\>\+\-\.\,\[\]';
+        $this->checkSquareBrackets($prg);
+        $pattern = $this->extio ? '\>\<\+\-\.\,\:\;\[\]' : '\>\<\+\-\.\,\[\]';
         if ($this->stacked) {
             $pattern .= '\#\$';
+        } else if (preg_match('/[\#\$]/', $prg)) {
+            throw new \Exception('Stack operations are not allowed, please do not use "#" and "$" symbols!');
         }
         $pattern = '/[^' . $pattern . ']/';
         $p = preg_replace($pattern, '', $prg);
         return $p;
+    }
+
+    private function checkSquareBrackets($prg) {
+        $s = preg_replace('/[^\[\]]/', '', $prg);
+        $cnt = 0;
+        $len = strlen($s);
+        for ($i = 0; $i < $len; $i++) {
+            if ($s[$i] == '[') {
+                $cnt++;
+            } else {
+                $cnt--;
+                if ($cnt < 0) {
+                    throw new \Exception('Unexpected "]" encountered, no matching "[" precedes it!');
+                }
+            }
+        }
+        if ($cnt != 0) {
+            throw new \Exception('Code has more "[" than "]"!');
+        }
     }
 
     function codeLength($prg) {
@@ -102,6 +124,9 @@ class Brainfuck {
                         break;
                     case 1:
                         $dp -= $cnt;
+                        if ($dp < 0) {
+                            throw new \Exception('Data pointer is decremented below zero with "<" operation');
+                        }
                         break;
                     case 2:
                         $data[$dp] += $cnt;
@@ -137,6 +162,9 @@ class Brainfuck {
                             $output[] = chr($data[$dp]);
                             break;
                         case 5:
+                            if ($ip >= $inputSize) {
+                                throw new \Exception('Input have no more data, but program tries to read from it with ","!');
+                            }
                             $data[$dp] = ord($input[$ip++]);
                             break;
                         case 6:
@@ -145,7 +173,7 @@ class Brainfuck {
                         case 7:
                             while (!is_numeric($input[$ip])) {
                                 if (!isset($input[$ip])) {
-                                    throw new \Exception('Input have no more data, but program tries to read from it');
+                                    throw new \Exception('Input have no more data, but program tries to read from it with ";"!');
                                 }
                                 $ip++;
                             }
