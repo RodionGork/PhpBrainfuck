@@ -110,6 +110,7 @@ class Brainfuck {
         $cp = 0;
         $dp = 0;
         $ip = 0;
+        $inputSize = strlen($input);
         while ($counter >= 0) {
             $cur = $code[$cp];
             if ($cur == -1) {
